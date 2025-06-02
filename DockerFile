@@ -1,7 +1,22 @@
-FROM eclipse-temurin:17-jdk
+# Temel image
+FROM openjdk:17-jdk-slim
 
-COPY target/registration-0.0.1-SNAPSHOT.jar app.jar
+# Çalışma dizini
+WORKDIR /app
 
-EXPOSE 8080
+# Maven wrapper ve pom.xml ekle
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Bağımlılıkları indir
+RUN ./mvnw dependency:resolve
+
+# Tüm proje dosyalarını ekle
+COPY . .
+
+# Uygulamayı build et
+RUN ./mvnw clean package -DskipTests
+
+# Çalıştırılacak jar dosyasını belirle
+CMD ["java", "-jar", "target/registration-0.0.1-SNAPSHOT.jar"]
